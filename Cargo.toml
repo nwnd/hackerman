@@ -15,11 +15,12 @@ categories = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-serenity = { verison = "0.10", default-features = false, features = [
+serenity = { git = "https://github.com/serenity-rs/serenity", verison = "0.10", default-features = false, features = [
     "client",
     "gateway",
     "rustls_backend",
-    "model"
+    "model",
+    "unstable_discord_api"
 ] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 clap = "2.33"

@@ -1,74 +1,107 @@
+use super::handlers::imgify::imgify_command;
 use log::info;
 use serenity::{
     async_trait,
-    model::{channel::Message, gateway::Ready},
+    builder::{CreateApplicationCommand, CreateApplicationCommands},
+    model::{
+        gateway::Ready,
+        id::GuildId,
+        interactions::{
+            application_command::{
+                ApplicationCommand, ApplicationCommandInteractionDataOptionValue,
+                ApplicationCommandOptionType,
+            },
+            Interaction, InteractionResponseType,
+        },
+    },
     prelude::*,
 };
 
-use super::handlers::imgify::imgify_command;
-
-const COMMAND_PREFIX: &str = "%";
+// Authorized guilds
+const NWND_GUILD_ID: u64 = 717476650014736394;
 
 pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
-    async fn message(&self, ctx: Context, msg: Message) {
-        // Grab the first segment of the message
-        let mut message_parts = msg.content.split(' ').collect::<Vec<&str>>().into_iter();
+    async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
+        if let Interaction::ApplicationCommand(command) = interaction {
+            let content = match command.data.name.as_str() {
+                "hackerping" => Some("***HACKERMAN* is here!**".to_string()),
+                "imgify" => Some(
+                    imgify_command(
+                        command
+                            .data
+                            .options
+                            .get(0)
+                            .expect("Expected some text")
+                            .value
+                            .as_ref()
+                            .unwrap()
+                            .as_str()
+                            .unwrap()
+                            .to_string(),
+                    )
+                    .await
+                    .unwrap(),
+                ),
+                "hackerman" => Some("https://i.kym-cdn.com/entries/icons/original/000/021/807/ig9OoyenpxqdCQyABmOQBZDI0duHk2QZZmWg2Hxd4ro.jpg".to_string()),
+                _ => None,
+            };
 
-        // Only read valid messages
-        if let Some(command) = message_parts.next() {
-            // Only read messages that start with the command prefix
-            if command.starts_with(COMMAND_PREFIX) {
-                // Remove the prefix char
-                let mut cmd_chars = command.chars();
-                cmd_chars.next();
-                let command: String = cmd_chars.collect();
-
-                // Fetch the rest of the message as the actual content
-                let content = message_parts.collect::<Vec<&str>>().join(" ");
-
-                // Log the event
-                info!(
-                    "Handling command \"{}\" with arguments: {}",
-                    command, content
-                );
-
-                match command.as_str() {
-                    // Imgify command
-                    "imgify" => {
-                        imgify_command(content, ctx, msg).await.unwrap();
-                    }
-
-                    // Skip unknown commands
-                    _ => {}
+            // Only respond to valid commands
+            if let Some(resp) = content {
+                if let Err(why) = command
+                    .create_interaction_response(&ctx.http, |response| {
+                        response
+                            .kind(InteractionResponseType::ChannelMessageWithSource)
+                            .interaction_response_data(|message| message.content(resp))
+                    })
+                    .await
+                {
+                    println!("Cannot respond to slash command: {}", why);
                 }
             }
         }
-
-        // // Handle various commands
-        // match message_parts.first() {
-        //     Some(command) => match command {
-        //         // Ping/Pong
-        //         "%ping" => {
-        //             msg.channel_id.say(&ctx.http, "Pong!").await;
-        //         }
-
-        //         // Skip empty or unknown commands
-        //         _ => {}
-        //     },
-        //     None => {}
-        // }
-
-        // if msg.content == "!ping" {
-        //     if let Err(why) = msg.channel_id.say(&ctx.http, "Pong!").await {
-        //         println!("Error sending message: {:?}", why);
-        //     }
-        // }
     }
 
-    async fn ready(&self, _: Context, ready: Ready) {
+    async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
+
+        // Hackerping command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("hackerping")
+                    .description("Check HACKERMAN's status")
+            })
+            .await.unwrap();
+
+        // Hackerman himself
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("hackerman")
+                    .description("Experience the one and only")
+            })
+            .await.unwrap();
+
+        // imgify command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("imgify")
+                    .description("Convert text to an image")
+                    .create_option(|option| {
+                        option
+                            .name("text")
+                            .description("The message to send")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(true)
+                    })
+            })
+            .await.unwrap();
+
+        println!("Commands configured.");
     }
 }

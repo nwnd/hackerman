@@ -18,10 +18,14 @@ async fn main() {
     env_logger::init();
 
     // Get the discord token
-    let discord_token = env::var("DISCORD_TOKEN").expect("Expected a token in the environment");
+    let discord_token = env::var("DISCORD_TOKEN").expect("$DISCORD_TOKEN not set");
+    let discord_app_id: u64 = env::var("DISCORD_APP_ID")
+        .expect("$DISCORD_APP_ID not set")
+        .parse()
+        .expect("Application ID is not valid");
 
     // Set up the discord client
-    let mut discord_client = build_bot_client(discord_token.as_str()).await;
+    let mut discord_client = build_bot_client(discord_token.as_str(), discord_app_id).await;
 
     // Start the client
     if let Err(why) = discord_client.start().await {
