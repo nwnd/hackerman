@@ -1,17 +1,25 @@
 [package]
-name = "<crate_name>"
+name = "hackerman"
+publish = false
 version = "0.1.0"
 authors = ["Evan Pratten <ewpratten@gmail.com>"]
 edition = "2018"
-description = "<description>"
-documentation = "https://docs.rs/<crate_name>"
+description = "The NWnD Discord bot"
+documentation = "https://docs.rs/hackerman"
 readme = "README.md"
-homepage = "https://github.com/ewpratten/<repo_name>"
-repository = "https://github.com/ewpratten/<repo_name>"
+homepage = "https://github.com/ewpratten/hackerman"
+repository = "https://github.com/ewpratten/hackerman"
 license = "GPL-3.0"
 keywords = []
 categories = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [dependencies]
+serenity = { verison = "0.10", default-features = false, features = [
+    "client",
+    "gateway",
+    "rustls_backend",
+    "model"
+] }
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+clap = "2.33"
