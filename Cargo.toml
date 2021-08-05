@@ -23,3 +23,6 @@ serenity = { verison = "0.10", default-features = false, features = [
 ] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 clap = "2.33"
+urlencoding = "2.1"
+log = "0.4"
+env_logger = "0.9"
