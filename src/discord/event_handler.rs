@@ -1,3 +1,5 @@
+use crate::discord::handlers::{self_info::get_self_info, spacex::{get_next_spacex_info}};
+
 use super::handlers::{
     dns::{lookup_dns, lookup_dns_reverse},
     imgify::imgify_command,
@@ -82,6 +84,14 @@ impl EventHandler for Handler {
                     }
                     
                 ),
+                "self" => Some(
+                    get_self_info(
+                        &command.user,
+                         &command.member
+                    )
+                    .await
+                ),
+                "spacex" => Some(get_next_spacex_info().await),
                 _ => None,
             };
 
@@ -230,6 +240,26 @@ impl EventHandler for Handler {
                             .kind(ApplicationCommandOptionType::Integer)
                             .required(false)
                     })
+            })
+            .await
+            .unwrap();
+
+        // Self command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("self")
+                    .description("Get information about yourself")
+            })
+            .await
+            .unwrap();
+
+        // SpaceX launch info command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("spacex")
+                    .description("Get information about the next SpaceX launch")
             })
             .await
             .unwrap();
