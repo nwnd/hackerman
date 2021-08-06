@@ -1,4 +1,8 @@
-use super::handlers::imgify::imgify_command;
+use super::handlers::{
+    dns::{lookup_dns, lookup_dns_reverse},
+    imgify::imgify_command,
+    minecraft::lookup_mc_server,
+};
 use log::info;
 use serenity::{
     async_trait,
@@ -8,11 +12,12 @@ use serenity::{
         id::GuildId,
         interactions::{
             application_command::{
-                ApplicationCommand, ApplicationCommandInteractionDataOptionValue,
-                ApplicationCommandOptionType,
+                ApplicationCommand, ApplicationCommandInteraction,
+                ApplicationCommandInteractionDataOptionValue, ApplicationCommandOptionType,
             },
             Interaction, InteractionResponseType,
         },
+        prelude::Activity,
     },
     prelude::*,
 };
@@ -20,46 +25,102 @@ use serenity::{
 // Authorized guilds
 const NWND_GUILD_ID: u64 = 717476650014736394;
 
+fn get_nth_string_from_command_data(
+    command: &ApplicationCommandInteraction,
+    nth: usize,
+) -> Option<String> {
+    match command.data.options.get(nth) {
+        Some(option) => match option.value.as_ref() {
+            Some(val) => match val.as_str() {
+                Some(s) => Some(s.to_string()),
+                None => None,
+            },
+            None => None,
+        },
+        None => None,
+    }
+}
+
 pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
+            println!("Got command: {:?}", command.data.name);
+
             let content = match command.data.name.as_str() {
-                "hackerping" => Some("***HACKERMAN* is here!**".to_string()),
+                "hackerping" => Some(Ok("***HACKERMAN* is here!**".to_string())),
                 "imgify" => Some(
                     imgify_command(
-                        command
-                            .data
-                            .options
-                            .get(0)
-                            .expect("Expected some text")
-                            .value
-                            .as_ref()
-                            .unwrap()
-                            .as_str()
-                            .unwrap()
-                            .to_string(),
+                        get_nth_string_from_command_data(&command, 0).unwrap(),
                     )
                     .await
-                    .unwrap(),
                 ),
-                "hackerman" => Some("https://i.kym-cdn.com/entries/icons/original/000/021/807/ig9OoyenpxqdCQyABmOQBZDI0duHk2QZZmWg2Hxd4ro.jpg".to_string()),
+                "hackerman" => Some(Ok("https://i.kym-cdn.com/entries/icons/original/000/021/807/ig9OoyenpxqdCQyABmOQBZDI0duHk2QZZmWg2Hxd4ro.jpg".to_string())),
+                "dns" => Some(
+                    lookup_dns(
+                        get_nth_string_from_command_data(&command, 0).unwrap(),
+                    )
+                    .await
+                ),
+                "rdns" => Some(
+                    lookup_dns_reverse(
+                        get_nth_string_from_command_data(&command, 0).unwrap(),
+                    )
+                    .await
+                ),
+                "irc" => Some(Ok("You can connect in to this server over IRC!\n\nAddress: `nerds.irc.retrylife.ca`\nPort: `6667` (no SSL)\n\nPing Evan for the password.".to_string())),
+                "mc_lookup" => Some(
+                    match get_nth_string_from_command_data(&command, 1).unwrap_or("25565".to_string()).parse() {
+                        Ok(port) => lookup_mc_server(
+                            get_nth_string_from_command_data(&command, 0).unwrap(),
+                            port,
+                        )
+                        .await,
+                        Err(_) => Ok("Invalid port number specified".to_string())
+                    }
+                    
+                ),
                 _ => None,
             };
 
             // Only respond to valid commands
-            if let Some(resp) = content {
-                if let Err(why) = command
-                    .create_interaction_response(&ctx.http, |response| {
-                        response
-                            .kind(InteractionResponseType::ChannelMessageWithSource)
-                            .interaction_response_data(|message| message.content(resp))
-                    })
-                    .await
-                {
-                    println!("Cannot respond to slash command: {}", why);
+            if let Some(result) = content {
+                // Handle possible errors
+                match result {
+                    Ok(resp) => {
+                        if let Err(why) = command
+                            .create_interaction_response(&ctx.http, |response| {
+                                response
+                                    .kind(InteractionResponseType::ChannelMessageWithSource)
+                                    .interaction_response_data(|message| message.content(resp))
+                            })
+                            .await
+                        {
+                            println!("Cannot respond to slash command: {}", why);
+                        }
+                    }
+                    Err(err) => match err {
+                        super::handlers::CommandHandlerError::Ignore => {}
+                        _ => {
+                            if let Err(why) = command
+                                .create_interaction_response(&ctx.http, |response| {
+                                    response
+                                        .kind(InteractionResponseType::ChannelMessageWithSource)
+                                        .interaction_response_data(|message| {
+                                            message.content(format!(
+                                                "A server error occured: \n```\n{:#?}\n```",
+                                                err
+                                            ))
+                                        })
+                                })
+                                .await
+                            {
+                                println!("Cannot respond to slash command: {}", why);
+                            }
+                        }
+                    },
                 }
             }
         }
@@ -75,7 +136,8 @@ impl EventHandler for Handler {
                     .name("hackerping")
                     .description("Check HACKERMAN's status")
             })
-            .await.unwrap();
+            .await
+            .unwrap();
 
         // Hackerman himself
         GuildId(NWND_GUILD_ID)
@@ -84,7 +146,8 @@ impl EventHandler for Handler {
                     .name("hackerman")
                     .description("Experience the one and only")
             })
-            .await.unwrap();
+            .await
+            .unwrap();
 
         // imgify command
         GuildId(NWND_GUILD_ID)
@@ -100,8 +163,81 @@ impl EventHandler for Handler {
                             .required(true)
                     })
             })
-            .await.unwrap();
+            .await
+            .unwrap();
+
+        // DNS lookup command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("dns")
+                    .description("Perform a DNS lookup")
+                    .create_option(|option| {
+                        option
+                            .name("domain")
+                            .description("Domain name to look up")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(true)
+                    })
+            })
+            .await
+            .unwrap();
+
+        // Reverse-DNS lookup command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("rdns")
+                    .description("Perform a reverse DNS lookup")
+                    .create_option(|option| {
+                        option
+                            .name("ip")
+                            .description("Ip address to look up")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(true)
+                    })
+            })
+            .await
+            .unwrap();
+
+        // IRC command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("irc")
+                    .description("Get information about the IRC server")
+            })
+            .await
+            .unwrap();
+
+        // Minecraft lookup command
+        GuildId(NWND_GUILD_ID)
+            .create_application_command(&ctx.http, |command| {
+                command
+                    .name("mc_lookup")
+                    .description("Query a Minecraft server")
+                    .create_option(|option| {
+                        option
+                            .name("address")
+                            .description("Minecraft server address")
+                            .kind(ApplicationCommandOptionType::String)
+                            .required(true)
+                    })
+                    .create_option(|option| {
+                        option
+                            .name("port")
+                            .description("Minecraft server port")
+                            .kind(ApplicationCommandOptionType::Integer)
+                            .required(false)
+                    })
+            })
+            .await
+            .unwrap();
 
         println!("Commands configured.");
+
+        // Set the activity
+        ctx.set_activity(Activity::watching("over script kiddies"))
+            .await;
     }
 }
