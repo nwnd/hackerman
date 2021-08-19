@@ -10,6 +10,8 @@ The goal of this bot is to provide a collection of funny memes and useful comman
 
 ![](assets/hackerman_profile.png)
 
+![](assets/hackerman.png)
+
 ## Building and running
 
 No matter how you run the bot, you must set both the `DISCORD_TOKEN` and `DISCORD_APP_ID` environment variables.
