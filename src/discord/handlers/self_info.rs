@@ -1,9 +1,5 @@
 use chrono::{DateTime, NaiveDateTime, Utc};
-use serenity::{
-    client::Context,
-    model::{channel::Message, guild::Member, prelude::User},
-    Error,
-};
+use serenity::model::{guild::Member, prelude::User};
 
 use super::CommandHandlerError;
 

@@ -5,17 +5,16 @@ use super::handlers::{
     imgify::imgify_command,
     minecraft::lookup_mc_server,
 };
-use log::info;
+
 use serenity::{
     async_trait,
-    builder::{CreateApplicationCommand, CreateApplicationCommands},
     model::{
         gateway::Ready,
         id::GuildId,
         interactions::{
             application_command::{
                 ApplicationCommand, ApplicationCommandInteraction,
-                ApplicationCommandInteractionDataOptionValue, ApplicationCommandOptionType,
+                 ApplicationCommandOptionType,
             },
             Interaction, InteractionResponseType,
         },
