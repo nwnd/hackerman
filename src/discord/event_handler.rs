@@ -1,4 +1,4 @@
-use crate::discord::handlers::{self_info::get_self_info, spacex::{get_next_spacex_info}};
+use crate::discord::handlers::{self_info::get_self_info};
 
 use super::handlers::{
     dns::{lookup_dns, lookup_dns_reverse},
@@ -91,7 +91,8 @@ impl EventHandler for Handler {
                     )
                     .await
                 ),
-                "spacex" => Some(get_next_spacex_info().await),
+                "funni" => Some(Ok("https://i.imgur.com/l4L5T3g.jpg".to_string())),
+                "coordsystems" => Some(Ok("https://i.imgur.com/KJVw88H.jpg".to_string())),
                 _ => None,
             };
 
@@ -139,29 +140,22 @@ impl EventHandler for Handler {
     async fn ready(&self, ctx: Context, ready: Ready) {
         println!("{} is connected!", ready.user.name);
 
-        // Hackerping command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
+        // Set up global commands
+        let commands = ApplicationCommand::set_global_application_commands(&ctx.http, |commands| {
+            // Hackerping command
+            commands.create_application_command(|command| {
                 command
                     .name("hackerping")
                     .description("Check HACKERMAN's status")
             })
-            .await
-            .unwrap();
-
-        // Hackerman himself
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
+            // Hackerman himself
+            .create_application_command( |command| {
                 command
                     .name("hackerman")
                     .description("Experience the one and only")
             })
-            .await
-            .unwrap();
-
-        // imgify command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
+            // imgify command
+            .create_application_command(|command| {
                 command
                     .name("imgify")
                     .description("Convert text to an image")
@@ -173,12 +167,8 @@ impl EventHandler for Handler {
                             .required(true)
                     })
             })
-            .await
-            .unwrap();
-
-        // DNS lookup command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
+            // DNS lookup
+            .create_application_command(|command| {
                 command
                     .name("dns")
                     .description("Perform a DNS lookup")
@@ -190,12 +180,8 @@ impl EventHandler for Handler {
                             .required(true)
                     })
             })
-            .await
-            .unwrap();
-
-        // Reverse-DNS lookup command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
+            // Reverse DNS lookup
+            .create_application_command( |command| {
                 command
                     .name("rdns")
                     .description("Perform a reverse DNS lookup")
@@ -207,22 +193,8 @@ impl EventHandler for Handler {
                             .required(true)
                     })
             })
-            .await
-            .unwrap();
-
-        // IRC command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
-                command
-                    .name("irc")
-                    .description("Get information about the IRC server")
-            })
-            .await
-            .unwrap();
-
-        // Minecraft lookup command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
+            // Minecraft server lookup
+            .create_application_command( |command| {
                 command
                     .name("mc_lookup")
                     .description("Query a Minecraft server")
@@ -241,25 +213,32 @@ impl EventHandler for Handler {
                             .required(false)
                     })
             })
-            .await
-            .unwrap();
-
-        // Self command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
+            // Self info
+            .create_application_command(|command| {
                 command
                     .name("self")
                     .description("Get information about yourself")
             })
-            .await
-            .unwrap();
+            // Funni command
+            .create_application_command(|command| {
+                command
+                    .name("funni")
+                    .description("Ha")
+            })
+            // coordinates command
+            .create_application_command(|command| {
+                command
+                    .name("coordsystems")
+                    .description("Coordinate system reference")
+            })
+        }).await.unwrap();
 
-        // SpaceX launch info command
+        // IRC command
         GuildId(NWND_GUILD_ID)
             .create_application_command(&ctx.http, |command| {
                 command
-                    .name("spacex")
-                    .description("Get information about the next SpaceX launch")
+                    .name("irc")
+                    .description("Get information about the IRC server")
             })
             .await
             .unwrap();

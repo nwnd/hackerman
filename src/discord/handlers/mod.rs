@@ -2,7 +2,6 @@ pub mod imgify;
 pub mod dns;
 pub mod minecraft;
 pub mod self_info;
-pub mod spacex;
 
 #[derive(Debug)]
 pub enum CommandHandlerError {
