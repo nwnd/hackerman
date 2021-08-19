@@ -1,0 +1,93 @@
+{
+    "nologic": [
+        {
+            "name": "hackerping",
+            "description": "Check HACKERMAN's status",
+            "response": "***HACKERMAN* is here!**"
+        },
+        {
+            "name": "hackerman",
+            "description": "Experience the one and only",
+            "response": "https://i.kym-cdn.com/entries/icons/original/000/021/807/ig9OoyenpxqdCQyABmOQBZDI0duHk2QZZmWg2Hxd4ro.jpg"
+        },
+        {
+            "name": "funni",
+            "description": "ha",
+            "response": "https://i.imgur.com/l4L5T3g.jpg"
+        },
+        {
+            "name": "coordsystems",
+            "description": "Coordinate system reference",
+            "response": "https://i.imgur.com/KJVw88H.jpg"
+        },
+        {
+            "name": "irc",
+            "description": "Get information about the IRC server",
+            "response": "You can connect in to this server over IRC!\n\nAddress: `nerds.irc.retrylife.ca`\nPort: `6667` (no SSL)\n\nPing Evan for the password.",
+            "scope": [
+                717476650014736394
+            ]
+        }
+    ],
+    "logic": [
+        {
+            "name": "imgify",
+            "description": "Convert text to an image",
+            "args": [
+                {
+                    "name": "text",
+                    "description": "The message to send",
+                    "required": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "dns",
+            "description": "Perform a DNS lookup",
+            "args": [
+                {
+                    "name": "domain",
+                    "description": "Domain name to look up",
+                    "required": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "rdns",
+            "description": "Perform a reverse DNS lookup",
+            "args": [
+                {
+                    "name": "ip",
+                    "description": "Ip address to look up",
+                    "required": true,
+                    "type": "String"
+                }
+            ]
+        },
+        {
+            "name": "mc_lookup",
+            "description": "Query a Minecraft server",
+            "args": [
+                {
+                    "name": "address",
+                    "description": "Minecraft server address",
+                    "required": true,
+                    "type": "String"
+                },
+                {
+                    "name": "port",
+                    "description": "Minecraft server port",
+                    "required": false,
+                    "type": "Integer"
+                }
+            ]
+        },
+        {
+            "name": "self",
+            "description": "Get information about yourself",
+            "args": []
+        }
+    ]
+}

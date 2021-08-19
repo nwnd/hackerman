@@ -6,7 +6,8 @@ pub mod self_info;
 #[derive(Debug)]
 pub enum CommandHandlerError {
     Ignore,
-    LibError(failure::Error)
+    LibError(failure::Error),
+    UnknownCommand(String)
 }
 
 impl From<failure::Error> for CommandHandlerError {

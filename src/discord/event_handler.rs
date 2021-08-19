@@ -1,102 +1,34 @@
-use crate::discord::handlers::{self_info::get_self_info};
+use super::{cmdmap::CmdMap, interact_dispatch::dispatch_command};
 
-use super::handlers::{
-    dns::{lookup_dns, lookup_dns_reverse},
-    imgify::imgify_command,
-    minecraft::lookup_mc_server,
-};
-
+use cfg_if::cfg_if;
 use serenity::{
     async_trait,
     model::{
         gateway::Ready,
         id::GuildId,
         interactions::{
-            application_command::{
-                ApplicationCommand, ApplicationCommandInteraction,
-                 ApplicationCommandOptionType,
-            },
+            application_command::{ApplicationCommand, ApplicationCommandOptionType},
             Interaction, InteractionResponseType,
         },
         prelude::Activity,
     },
     prelude::*,
 };
+use tracing::{error, info};
 
-// Authorized guilds
-const NWND_GUILD_ID: u64 = 717476650014736394;
-
-fn get_nth_string_from_command_data(
-    command: &ApplicationCommandInteraction,
-    nth: usize,
-) -> Option<String> {
-    match command.data.options.get(nth) {
-        Some(option) => match option.value.as_ref() {
-            Some(val) => match val.as_str() {
-                Some(s) => Some(s.to_string()),
-                None => None,
-            },
-            None => None,
-        },
-        None => None,
-    }
+pub struct Handler {
+    pub cmdmap: CmdMap,
 }
-
-pub struct Handler;
 
 #[async_trait]
 impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
-            println!("Got command: {:?}", command.data.name);
-
-            let content = match command.data.name.as_str() {
-                "hackerping" => Some(Ok("***HACKERMAN* is here!**".to_string())),
-                "imgify" => Some(
-                    imgify_command(
-                        get_nth_string_from_command_data(&command, 0).unwrap(),
-                    )
-                    .await
-                ),
-                "hackerman" => Some(Ok("https://i.kym-cdn.com/entries/icons/original/000/021/807/ig9OoyenpxqdCQyABmOQBZDI0duHk2QZZmWg2Hxd4ro.jpg".to_string())),
-                "dns" => Some(
-                    lookup_dns(
-                        get_nth_string_from_command_data(&command, 0).unwrap(),
-                    )
-                    .await
-                ),
-                "rdns" => Some(
-                    lookup_dns_reverse(
-                        get_nth_string_from_command_data(&command, 0).unwrap(),
-                    )
-                    .await
-                ),
-                "irc" => Some(Ok("You can connect in to this server over IRC!\n\nAddress: `nerds.irc.retrylife.ca`\nPort: `6667` (no SSL)\n\nPing Evan for the password.".to_string())),
-                "mc_lookup" => Some(
-                    match get_nth_string_from_command_data(&command, 1).unwrap_or("25565".to_string()).parse() {
-                        Ok(port) => lookup_mc_server(
-                            get_nth_string_from_command_data(&command, 0).unwrap(),
-                            port,
-                        )
-                        .await,
-                        Err(_) => Ok("Invalid port number specified".to_string())
-                    }
-                    
-                ),
-                "self" => Some(
-                    get_self_info(
-                        &command.user,
-                         &command.member
-                    )
-                    .await
-                ),
-                "funni" => Some(Ok("https://i.imgur.com/l4L5T3g.jpg".to_string())),
-                "coordsystems" => Some(Ok("https://i.imgur.com/KJVw88H.jpg".to_string())),
-                _ => None,
-            };
+            // Dispatch the command
+            let response = dispatch_command(&self, &command).await;
 
             // Only respond to valid commands
-            if let Some(result) = content {
+            if let Some(result) = response {
                 // Handle possible errors
                 match result {
                     Ok(resp) => {
@@ -108,7 +40,7 @@ impl EventHandler for Handler {
                             })
                             .await
                         {
-                            println!("Cannot respond to slash command: {}", why);
+                            error!("Cannot respond to slash command: {}", why);
                         }
                     }
                     Err(err) => match err {
@@ -127,7 +59,7 @@ impl EventHandler for Handler {
                                 })
                                 .await
                             {
-                                println!("Cannot respond to slash command: {}", why);
+                                error!("Cannot respond to slash command: {}", why);
                             }
                         }
                     },
@@ -137,115 +69,95 @@ impl EventHandler for Handler {
     }
 
     async fn ready(&self, ctx: Context, ready: Ready) {
-        println!("{} is connected!", ready.user.name);
+        info!("{} is connected!", ready.user.name);
 
         // Set up global commands
-        let commands = ApplicationCommand::set_global_application_commands(&ctx.http, |commands| {
-            // Hackerping command
-            commands.create_application_command(|command| {
-                command
-                    .name("hackerping")
-                    .description("Check HACKERMAN's status")
-            })
-            // Hackerman himself
-            .create_application_command( |command| {
-                command
-                    .name("hackerman")
-                    .description("Experience the one and only")
-            })
-            // imgify command
-            .create_application_command(|command| {
-                command
-                    .name("imgify")
-                    .description("Convert text to an image")
-                    .create_option(|option| {
-                        option
-                            .name("text")
-                            .description("The message to send")
-                            .kind(ApplicationCommandOptionType::String)
-                            .required(true)
-                    })
-            })
-            // DNS lookup
-            .create_application_command(|command| {
-                command
-                    .name("dns")
-                    .description("Perform a DNS lookup")
-                    .create_option(|option| {
-                        option
-                            .name("domain")
-                            .description("Domain name to look up")
-                            .kind(ApplicationCommandOptionType::String)
-                            .required(true)
-                    })
-            })
-            // Reverse DNS lookup
-            .create_application_command( |command| {
-                command
-                    .name("rdns")
-                    .description("Perform a reverse DNS lookup")
-                    .create_option(|option| {
-                        option
-                            .name("ip")
-                            .description("Ip address to look up")
-                            .kind(ApplicationCommandOptionType::String)
-                            .required(true)
-                    })
-            })
-            // Minecraft server lookup
-            .create_application_command( |command| {
-                command
-                    .name("mc_lookup")
-                    .description("Query a Minecraft server")
-                    .create_option(|option| {
-                        option
-                            .name("address")
-                            .description("Minecraft server address")
-                            .kind(ApplicationCommandOptionType::String)
-                            .required(true)
-                    })
-                    .create_option(|option| {
-                        option
-                            .name("port")
-                            .description("Minecraft server port")
-                            .kind(ApplicationCommandOptionType::Integer)
-                            .required(false)
-                    })
-            })
-            // Self info
-            .create_application_command(|command| {
-                command
-                    .name("self")
-                    .description("Get information about yourself")
-            })
-            // Funni command
-            .create_application_command(|command| {
-                command
-                    .name("funni")
-                    .description("Ha")
-            })
-            // coordinates command
-            .create_application_command(|command| {
-                command
-                    .name("coordsystems")
-                    .description("Coordinate system reference")
-            })
-        }).await.unwrap();
+        let _commands =
+            ApplicationCommand::set_global_application_commands(&ctx.http, |commands| {
+                // Handle configuring any JSON commands
+                info!("Loading commands from JSON");
+                let mut cmds = commands;
 
-        // IRC command
-        GuildId(NWND_GUILD_ID)
-            .create_application_command(&ctx.http, |command| {
-                command
-                    .name("irc")
-                    .description("Get information about the IRC server")
+                // Handle logic-less commands
+                for cmd in &self.cmdmap.nologic {
+                    if cmd.scope.is_none() {
+                        info!("Setting up global command: /{}", cmd.name);
+                        cmds = cmds.create_application_command(|command| {
+                            command
+                                .name(cmd.name.as_str())
+                                .description(cmd.description.as_str())
+                        });
+                    }
+                }
+
+                // Handle commands with logic
+                for cmd in &self.cmdmap.logic {
+                    if cmd.scope.is_none() {
+                        info!("Setting up global command: /{}", cmd.name);
+                        cmds = cmds.create_application_command(|command| {
+                            let mut c = command;
+                            c = c
+                                .name(cmd.name.as_str())
+                                .description(cmd.description.as_str());
+                            for arg in &cmd.args {
+                                c = c.create_option(|option| {
+                                    option
+                                        .name(arg.name.as_str())
+                                        .description(arg.description.as_str())
+                                        .required(arg.required)
+                                        .kind(match arg.kind.as_str() {
+                                            "User" => ApplicationCommandOptionType::User,
+                                            "String" => ApplicationCommandOptionType::String,
+                                            "Integer" => ApplicationCommandOptionType::Integer,
+                                            "Boolean" => ApplicationCommandOptionType::Boolean,
+                                            "Channel" => ApplicationCommandOptionType::Channel,
+                                            "Role" => ApplicationCommandOptionType::Role,
+                                            "Number" => ApplicationCommandOptionType::Number,
+                                            _ => ApplicationCommandOptionType::Unknown,
+                                        })
+                                });
+                            }
+                            c
+                        });
+                    }
+                }
+
+                // Return ref
+                cmds
             })
             .await
             .unwrap();
 
-        println!("Commands configured.");
+        // Set up scoped commands
+        for cmd in &self.cmdmap.nologic {
+            if let Some(scope) = &cmd.scope {
+                for guild in scope {
+                    info!("Setting up guild command: /{} in {}", cmd.name, guild);
+                    GuildId(*guild)
+                        .create_application_command(&ctx.http, |command| {
+                            command
+                                .name(cmd.name.as_str())
+                                .description(cmd.description.as_str())
+                        })
+                        .await
+                        .unwrap();
+                }
+            }
+        }
+        info!("Commands configured.");
 
         // Set the activity
+        // We are using the DND specifier to show if running in dev mode
         ctx.set_activity(Activity::watching("over script kiddies"))
             .await;
+        cfg_if! {
+            if #[cfg(debug_assertions)] {
+                info!("Setting status to DND since we are in dev mode");
+                ctx.dnd().await;
+            } else {
+                info!("Setting status to online since we are in production");
+                ctx.online().await;
+            }
+        }
     }
 }
