@@ -80,7 +80,7 @@
                     "name": "port",
                     "description": "Minecraft server port",
                     "required": false,
-                    "type": "Integer"
+                    "type": "String"
                 }
             ]
         },
@@ -88,6 +88,21 @@
             "name": "self",
             "description": "Get information about yourself",
             "args": []
+        },
+        {
+            "name": "rfc",
+            "description": "Get information about an RFC",
+            "args": [
+                {
+                    "name": "number",
+                    "description": "RFC number",
+                    "required": true,
+                    "type": "String"
+                }
+            ],
+            "scope": [
+                717476650014736394
+            ]
         }
     ]
 }
