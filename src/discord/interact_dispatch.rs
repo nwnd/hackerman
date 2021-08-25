@@ -4,16 +4,7 @@ use serenity::{
 };
 use tracing::info;
 
-use crate::discord::{
-    cmdutil::get_nth_string_from_command_data,
-    handlers::{
-        dns::{lookup_dns, lookup_dns_reverse},
-        imgify::imgify_command,
-        minecraft::lookup_mc_server,
-        rfc::lookup_rfc,
-        self_info::get_self_info,
-    },
-};
+use crate::discord::{cmdutil::get_nth_string_from_command_data, handlers::{dns::{lookup_dns, lookup_dns_reverse}, gitsnip::handle_gitsnip, imgify::imgify_command, minecraft::lookup_mc_server, rfc::lookup_rfc, self_info::get_self_info}};
 
 use super::{event_handler::Handler, handlers::CommandHandlerError};
 
@@ -89,6 +80,11 @@ pub async fn dispatch_command(
         ),
         "self" => Some(
             get_self_info(&command.user, &command.member)
+                .await
+                .map(|s| s.into()),
+        ),
+        "gitsnip" => Some(
+            handle_gitsnip(get_nth_string_from_command_data(&command, 0).unwrap())
                 .await
                 .map(|s| s.into()),
         ),
