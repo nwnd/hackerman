@@ -99,6 +99,18 @@
                     "required": true,
                     "type": "String"
                 }
+            ]
+        },
+        {
+            "name": "gitsnip",
+            "description": "Share a code snippet from GitHub or GitLab",
+            "args": [
+                {
+                    "name": "url",
+                    "description": "GitHub or GitLab URL",
+                    "required": true,
+                    "type": "String"
+                }
             ],
             "scope": [
                 717476650014736394
