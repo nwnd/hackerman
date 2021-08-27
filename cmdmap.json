@@ -11,6 +11,11 @@
             "response": "https://i.kym-cdn.com/entries/icons/original/000/021/807/ig9OoyenpxqdCQyABmOQBZDI0duHk2QZZmWg2Hxd4ro.jpg"
         },
         {
+            "name": "hackergirl",
+            "description": "When Cat gives you ideas..",
+            "response": "https://i.imgur.com/SE9c9If.jpg"
+        },
+        {
             "name": "funni",
             "description": "ha",
             "response": "https://i.imgur.com/l4L5T3g.jpg"
@@ -24,6 +29,14 @@
             "name": "irc",
             "description": "Get information about the IRC server",
             "response": "You can connect in to this server over IRC!\n\nAddress: `nerds.irc.retrylife.ca`\nPort: `6667` (no SSL)\n\nPing Evan for the password.",
+            "scope": [
+                717476650014736394
+            ]
+        },
+        {
+            "name": "botbye",
+            "description": "Looks like its dev-mode time again",
+            "response": "**Goodbye cruel world!**",
             "scope": [
                 717476650014736394
             ]
@@ -111,9 +124,6 @@
                     "required": true,
                     "type": "String"
                 }
-            ],
-            "scope": [
-                717476650014736394
             ]
         }
     ]
