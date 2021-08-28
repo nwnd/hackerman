@@ -36,10 +36,7 @@
         {
             "name": "botbye",
             "description": "Looks like its dev-mode time again",
-            "response": "**Goodbye cruel world!**",
-            "scope": [
-                717476650014736394
-            ]
+            "response": "**Goodbye cruel world!**"
         }
     ],
     "logic": [
@@ -124,6 +121,21 @@
                     "required": true,
                     "type": "String"
                 }
+            ]
+        },
+        {
+            "name": "uwu",
+            "description": "UwU-ify some text",
+            "args": [
+                {
+                    "name": "text",
+                    "description": "Text to UwU-ify",
+                    "required": true,
+                    "type": "String"
+                }
+            ],
+            "scope": [
+                717476650014736394
             ]
         }
     ]

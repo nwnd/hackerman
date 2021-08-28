@@ -4,6 +4,7 @@ pub mod imgify;
 pub mod minecraft;
 pub mod rfc;
 pub mod self_info;
+pub mod uwu;
 
 use thiserror::Error;
 
