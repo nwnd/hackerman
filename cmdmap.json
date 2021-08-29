@@ -13,7 +13,10 @@
         {
             "name": "hackergirl",
             "description": "When Cat gives you ideas..",
-            "response": "https://i.imgur.com/SE9c9If.jpg"
+            "response": "https://i.imgur.com/SE9c9If.jpg",
+            "scope": [
+                717476650014736394
+            ]
         },
         {
             "name": "funni",
@@ -133,9 +136,6 @@
                     "required": true,
                     "type": "String"
                 }
-            ],
-            "scope": [
-                717476650014736394
             ]
         },
         {
