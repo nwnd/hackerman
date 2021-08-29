@@ -137,6 +137,21 @@
             "scope": [
                 717476650014736394
             ]
+        },
+        {
+            "name": "fakepng",
+            "description": "Commit war crimes to a PNG",
+            "args": [
+                {
+                    "name": "url",
+                    "description": "URL to a PNG",
+                    "required": true,
+                    "type": "String"
+                }
+            ],
+            "scope": [
+                717476650014736394
+            ]
         }
     ]
 }

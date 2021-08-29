@@ -5,6 +5,7 @@ pub mod minecraft;
 pub mod rfc;
 pub mod self_info;
 pub mod uwu;
+pub mod fakepng;
 
 use thiserror::Error;
 
@@ -15,5 +16,9 @@ pub enum CommandHandlerError {
     #[error("Command Not Found {0}")]
     UnknownCommand(String),
     #[error(transparent)]
-    CodeblockError(git2codeblock::Error),
+    CodeblockError(#[from] git2codeblock::Error),
+    #[error(transparent)]
+    UrlParseError(#[from] url::ParseError),
+    #[error(transparent)]
+    RipplError(#[from] rippl::error::Error),
 }
