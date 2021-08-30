@@ -7,6 +7,7 @@ pub mod self_info;
 pub mod uwu;
 pub mod fakepng;
 pub mod rickroll;
+pub mod gtfo;
 
 use thiserror::Error;
 

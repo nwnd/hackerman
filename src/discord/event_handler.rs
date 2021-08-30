@@ -9,7 +9,7 @@ use serenity::{
         id::GuildId,
         interactions::{
             application_command::{ApplicationCommand, ApplicationCommandOptionType},
-            Interaction, InteractionResponseType,
+            Interaction, InteractionApplicationCommandCallbackDataFlags, InteractionResponseType,
         },
         prelude::Activity,
     },
@@ -45,7 +45,11 @@ impl EventHandler for Handler {
                                         if let Some(embed) = resp.embed {
                                             m = m.add_embed(embed);
                                         }
-                                        m
+                                        if resp.private{
+                                            m.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                                        } else {
+                                            m
+                                        }
                                     })
                             })
                             .await

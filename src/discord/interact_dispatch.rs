@@ -1,14 +1,18 @@
-use serenity::{builder::CreateEmbed, client::Context, model::{channel::Embed, interactions::application_command::ApplicationCommandInteraction}};
+use serenity::{
+    builder::CreateEmbed,
+    client::Context,
+    model::{channel::Embed, interactions::application_command::ApplicationCommandInteraction},
+};
 use tracing::info;
 
-use crate::discord::{cmdutil::get_nth_string_from_command_data, handlers::{dns::{lookup_dns, lookup_dns_reverse}, fakepng::handle_fakepng, gitsnip::handle_gitsnip, imgify::imgify_command, minecraft::lookup_mc_server, rfc::lookup_rfc, rickroll::handle_rickroll, self_info::get_self_info, uwu::handle_uwu}};
-
+use crate::discord::{cmdutil::get_nth_string_from_command_data, handlers::{dns::{lookup_dns, lookup_dns_reverse}, fakepng::handle_fakepng, gitsnip::handle_gitsnip, gtfo::handle_gtfo, imgify::imgify_command, minecraft::lookup_mc_server, rfc::lookup_rfc, rickroll::handle_rickroll, self_info::get_self_info, uwu::handle_uwu}};
 
 use super::{event_handler::Handler, handlers::CommandHandlerError};
 
 pub struct RichRepsonse {
     pub body: Option<String>,
     pub embed: Option<CreateEmbed>,
+    pub private: bool,
 }
 
 impl From<String> for RichRepsonse {
@@ -16,6 +20,7 @@ impl From<String> for RichRepsonse {
         Self {
             body: Some(body),
             embed: None,
+            private: false,
         }
     }
 }
@@ -24,7 +29,7 @@ impl From<String> for RichRepsonse {
 pub async fn dispatch_command(
     handler: &Handler,
     command: &ApplicationCommandInteraction,
-    ctx: &Context
+    ctx: &Context,
 ) -> Option<Result<RichRepsonse, CommandHandlerError>> {
     // Command name
     let cmd_name = command.data.name.as_str();
@@ -89,17 +94,31 @@ pub async fn dispatch_command(
         ),
         "uwu" => Some(
             handle_uwu(get_nth_string_from_command_data(&command, 0).unwrap())
-            .await
-            .map(|s| s.into()),
+                .await
+                .map(|s| s.into()),
         ),
         "fakepng" => Some(
             handle_fakepng(get_nth_string_from_command_data(&command, 0).unwrap())
                 .await
                 .map(|s| s.into()),
-        ), "rickroll" => Some(
-            handle_rickroll(&ctx, &command.guild_id, &command.channel_id, &command.member)
-                .await
-                .map(|s| s.into()),
+        ),
+        "rickroll" => Some(
+            handle_rickroll(
+                &ctx,
+                &command.guild_id,
+                get_nth_string_from_command_data(&command, 0).unwrap(),
+            )
+            .await
+            .map(|s| s.into()),
+        ),
+        "gtfo" => Some(
+            handle_gtfo(
+                &ctx,
+                &command.guild_id,
+                get_nth_string_from_command_data(&command, 0).unwrap(),
+            )
+            .await
+            .map(|s| s.into()),
         ),
         _ => None,
     } {

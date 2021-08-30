@@ -17,6 +17,7 @@ pub async fn handle_gitsnip(url: String) -> Result<RichRepsonse, CommandHandlerE
         Ok(RichRepsonse {
             body: None,
             embed: Some(embed),
+            private: false,
         })
     } else {
         Err(CommandHandlerError::CodeblockError(codeblock.unwrap_err()))

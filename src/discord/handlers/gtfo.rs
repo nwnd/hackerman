@@ -8,7 +8,7 @@ use crate::discord::interact_dispatch::RichRepsonse;
 
 use super::CommandHandlerError;
 
-pub async fn handle_rickroll(
+pub async fn handle_gtfo(
     ctx: &Context,
     guild: &Option<GuildId>,
     channel: String,
@@ -36,23 +36,19 @@ pub async fn handle_rickroll(
         .await;
 
     // This only works in voice channels
-    if let Some(handler_lock) = manager.get(guild.0) {
-        let mut handler = handler_lock.lock().await;
-        let source = songbird::ytdl("https://www.youtube.com/watch?v=dQw4w9WgXcQ").await?;
-        handler.play_source(source);
-        return Ok(RichRepsonse {
+    if manager.get(guild.0).is_some() {
+        // Leave the VC
+        manager.remove(guild.0).await.unwrap();
+        Ok(RichRepsonse {
             embed: None,
-            body: Some("Its Rickroll time!".to_string()),
+            body: Some("Goodbye".to_string()),
             private: true,
-        });
+        })
     } else {
-        return Ok(RichRepsonse {
+        Ok(RichRepsonse {
             embed: None,
-            body: Some(
-                "This command only works in voice channels. This may be a Songbird error."
-                    .to_string(),
-            ),
+            body: Some("Not in a VC".to_string()),
             private: true,
-        });
+        })
     }
 }
