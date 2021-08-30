@@ -26,7 +26,7 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
             // Dispatch the command
-            let response = dispatch_command(&self, &command).await;
+            let response = dispatch_command(&self, &command, &ctx).await;
 
             // Only respond to valid commands
             if let Some(result) = response {

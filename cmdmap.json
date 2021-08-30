@@ -152,6 +152,15 @@
             "scope": [
                 717476650014736394
             ]
+        },
+        {
+            "name": "rickroll",
+            "description": "Rickroll your current VC",
+            "args": [
+            ],
+            "scope": [
+                717476650014736394
+            ]
         }
     ]
 }
