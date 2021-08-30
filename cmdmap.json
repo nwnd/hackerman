@@ -152,6 +152,36 @@
             "scope": [
                 717476650014736394
             ]
+        },
+        {
+            "name": "rickroll",
+            "description": "Rickroll a VC",
+            "args": [
+                {
+                    "name": "channel",
+                    "description": "Channel to rickroll",
+                    "required": true,
+                    "type": "Channel"
+                }
+            ],
+            "scope": [
+                717476650014736394
+            ]
+        },
+        {
+            "name": "gtfo",
+            "description": "Kick HACKERMAN from its current VC",
+            "args": [
+                {
+                    "name": "channel",
+                    "description": "Channel to rickroll",
+                    "required": true,
+                    "type": "Channel"
+                }
+            ],
+            "scope": [
+                717476650014736394
+            ]
         }
     ]
 }

@@ -9,7 +9,7 @@ use serenity::{
         id::GuildId,
         interactions::{
             application_command::{ApplicationCommand, ApplicationCommandOptionType},
-            Interaction, InteractionResponseType,
+            Interaction, InteractionApplicationCommandCallbackDataFlags, InteractionResponseType,
         },
         prelude::Activity,
     },
@@ -26,7 +26,7 @@ impl EventHandler for Handler {
     async fn interaction_create(&self, ctx: Context, interaction: Interaction) {
         if let Interaction::ApplicationCommand(command) = interaction {
             // Dispatch the command
-            let response = dispatch_command(&self, &command).await;
+            let response = dispatch_command(&self, &command, &ctx).await;
 
             // Only respond to valid commands
             if let Some(result) = response {
@@ -45,7 +45,11 @@ impl EventHandler for Handler {
                                         if let Some(embed) = resp.embed {
                                             m = m.add_embed(embed);
                                         }
-                                        m
+                                        if resp.private{
+                                            m.flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                                        } else {
+                                            m
+                                        }
                                     })
                             })
                             .await

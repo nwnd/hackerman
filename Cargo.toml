@@ -15,7 +15,8 @@ categories = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 [dependencies]
-serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current", version = "0.10", default-features = false, features = [
+# git = "https://github.com/serenity-rs/serenity", branch = "current"
+serenity = { version = "^0.10.2", default-features = false, features = [
     "client",
     "gateway",
     "rustls_backend",
@@ -24,7 +25,9 @@ serenity = { git = "https://github.com/serenity-rs/serenity", branch = "current"
     "builder",
     "cache",
     "http",
-    "utils"
+    "utils",
+    "voice",
+    "cache"
 ] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 clap = "2.33"
@@ -38,7 +41,11 @@ serde = { version = "1.0.126", features = ["derive"] }
 serde_json = "1.0.64"
 autojson = "0.1"
 cfg-if = "1.0"
-songbird = "0.2"
+songbird = { git = "https://github.com/serenity-rs/songbird", branch = "current", version = "0.2", features = [
+    "serenity-rustls",
+    "gateway",
+    "default"
+] }
 serenity_utils = "0.6"
 reqwest = "0.11"
 regex = "1"
@@ -50,3 +57,7 @@ rippl = "0.2"
 url = "2.2"
 image = "0.23"
 falsepng = "0.1"
+
+[profile.release]
+lto = true
+codegen-units = 1

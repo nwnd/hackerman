@@ -36,6 +36,7 @@ pub async fn lookup_rfc(number: u32) -> Result<RichRepsonse, CommandHandlerError
     Ok(RichRepsonse {
         body: None,
         embed: Some(embed),
+        private: false,
     })
     } else {
         Ok(format!("RFC `{}` does not exist", number).into())

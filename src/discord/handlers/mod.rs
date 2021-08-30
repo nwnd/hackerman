@@ -6,6 +6,8 @@ pub mod rfc;
 pub mod self_info;
 pub mod uwu;
 pub mod fakepng;
+pub mod rickroll;
+pub mod gtfo;
 
 use thiserror::Error;
 
@@ -21,4 +23,6 @@ pub enum CommandHandlerError {
     UrlParseError(#[from] url::ParseError),
     #[error(transparent)]
     RipplError(#[from] rippl::error::Error),
+    #[error(transparent)]
+    SongbirdError(#[from] songbird::input::error::Error),
 }
